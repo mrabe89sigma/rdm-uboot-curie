@@ -91,9 +91,8 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static enum boot_device boot_dev;
 
-#define GPIO_VOL_DN_KEY IMX_GPIO_NR(1, 5)
-#define USB_OTG_PWR IMX_GPIO_NR(3, 22)
-#define USB_H1_POWER IMX_GPIO_NR(1, 29)
+#define USB_OTG_PWR IMX_GPIO_NR(4, 15)
+#define USB_H1_POWER IMX_GPIO_NR(1, 0)
 
 extern int sata_curr_device;
 
@@ -863,59 +862,6 @@ void spi_io_init(struct imx_spi_dev_t *dev)
 		break;
 	}
 }
-#endif
-#if 0
-#ifdef CONFIG_NAND_GPMI
-
-iomux_v3_cfg_t nfc_pads[] = {
-	MX6Q_PAD_NANDF_CLE__RAWNAND_CLE,
-	MX6Q_PAD_NANDF_ALE__RAWNAND_ALE,
-	MX6Q_PAD_NANDF_WP_B__RAWNAND_RESETN,
-	MX6Q_PAD_NANDF_RB0__RAWNAND_READY0,
-	MX6Q_PAD_NANDF_CS0__RAWNAND_CE0N,
-	MX6Q_PAD_NANDF_CS1__RAWNAND_CE1N,
-	MX6Q_PAD_NANDF_CS2__RAWNAND_CE2N,
-	MX6Q_PAD_NANDF_CS3__RAWNAND_CE3N,
-	MX6Q_PAD_SD4_CMD__RAWNAND_RDN,
-	MX6Q_PAD_SD4_CLK__RAWNAND_WRN,
-	MX6Q_PAD_NANDF_D0__RAWNAND_D0,
-	MX6Q_PAD_NANDF_D1__RAWNAND_D1,
-	MX6Q_PAD_NANDF_D2__RAWNAND_D2,
-	MX6Q_PAD_NANDF_D3__RAWNAND_D3,
-	MX6Q_PAD_NANDF_D4__RAWNAND_D4,
-	MX6Q_PAD_NANDF_D5__RAWNAND_D5,
-	MX6Q_PAD_NANDF_D6__RAWNAND_D6,
-	MX6Q_PAD_NANDF_D7__RAWNAND_D7,
-	MX6Q_PAD_SD4_DAT0__RAWNAND_DQS,
-};
-
-int setup_gpmi_nand(void)
-{
-	unsigned int reg;
-
-	/* config gpmi nand iomux */
-	mxc_iomux_v3_setup_multiple_pads(nfc_pads,
-			ARRAY_SIZE(nfc_pads));
-
-
-	/* config gpmi and bch clock to 11Mhz*/
-	reg = readl(CCM_BASE_ADDR + CLKCTL_CS2CDR);
-	reg &= 0xF800FFFF;
-	reg |= 0x01E40000;
-	writel(reg, CCM_BASE_ADDR + CLKCTL_CS2CDR);
-
-	/* enable gpmi and bch clock gating */
-	reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR4);
-	reg |= 0xFF003000;
-	writel(reg, CCM_BASE_ADDR + CLKCTL_CCGR4);
-
-	/* enable apbh clock gating */
-	reg = readl(CCM_BASE_ADDR + CLKCTL_CCGR0);
-	reg |= 0x0030;
-	writel(reg, CCM_BASE_ADDR + CLKCTL_CCGR0);
-
-}
-#endif
 #endif
 
 #ifdef CONFIG_NET_MULTI
@@ -1749,29 +1695,6 @@ int board_init(void)
 }
 
 
-#ifdef CONFIG_ANDROID_RECOVERY
-
-int check_recovery_cmd_file(void)
-{
-	int button_pressed = 0;
-	int recovery_mode = 0;
-
-	recovery_mode = check_and_clean_recovery_flag();
-
-	/* Check Recovery Combo Button press or not. */
-	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_GPIO_5__GPIO_1_5));
-
-	gpio_direction_input(GPIO_VOL_DN_KEY);
-
-	if (gpio_get_value(GPIO_VOL_DN_KEY) == 0) { /* VOL_DN key is low assert */
-		button_pressed = 1;
-		printf("Recovery key pressed\n");
-	}
-
-	return recovery_mode || button_pressed;
-}
-#endif
-
 int board_late_init(void)
 {
 	int ret = 0;
@@ -1828,6 +1751,8 @@ static int phy_write(char *devname, unsigned char addr, unsigned char reg,
 int mx6_rgmii_rework(char *devname, int phy_addr)
 {
 	unsigned short val;
+
+	return 0;
 
 	/* To enable AR8031 ouput a 125MHz clk from CLK_25M */
 	phy_write(devname, phy_addr, 0xd, 0x7);
@@ -2000,9 +1925,9 @@ void udc_pins_setting(void)
 	mxc_iomux_v3_setup_pad(MX6X_IOMUX(PAD_ENET_TXD1__GPIO_1_29));
 
 	/* USB_OTG_PWR = 0 */
-	gpio_direction_output(USB_OTG_PWR, 0);
+	gpio_direction_output(USB_OTG_PWR, 1);
 	/* USB_H1_POWER = 1 */
-	gpio_direction_output(USB_H1_POWER, 1);
+	gpio_direction_output(USB_H1_POWER, 0);
 
 	mxc_iomux_set_gpr_register(1, 13, 1, 0);
 

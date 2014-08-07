@@ -110,9 +110,12 @@ extern int mx6_rgmii_rework(char *devname, int phy_addr);
 				PHY_OUID_GET((valh & 0x3F), vall)
 #define PHY_MICREL_OUID_GET(valh, vall) \
 				PHY_OUID_GET((valh >> 10), vall)
+#define PHY_RTL8211_OUID_GET(valh, vall) \
+				PHY_OUID_GET((valh >> 10), vall)
 #define PHY_AR8031_OUID         PHY_OUID_GET(0x34, 0x4D)
 #define PHY_AR8033_OUID		PHY_OUID_GET(0x34, 0x4D)
 #define PHY_KSZ9021_OUID	PHY_OUID_GET(0x5, 0x22)
+#define PHY_RTL8211_OUID    PHY_OUID_GET(0x32, 0x1C) // 0x00A800E0
 
 /* Get phy ID */
 static unsigned int fec_phy_ouid;
@@ -121,6 +124,8 @@ static unsigned int fec_phy_ouid;
 #define phy_is_ar8031()	(((fec_phy_ouid & PHY_OUID_MASK) == PHY_AR8031_OUID) \
 			? 1 : 0)
 #define phy_is_ar8033()	(((fec_phy_ouid & PHY_OUID_MASK) == PHY_AR8033_OUID) \
+			? 1 : 0)
+#define phy_is_rtl8211()  (((fec_phy_ouid & PHY_OUID_MASK) == PHY_RTL8211_OUID) \
 			? 1 : 0)
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -226,9 +231,15 @@ static void mxc_get_phy_ouid(char *devname, int phy_addr)
 		return;
 	else if (phy_is_ar8033())
 		return;
+	else if (phy_is_rtl8211())
+		return;
 
 	fec_phy_ouid = PHY_MICREL_OUID_GET(value2, value1);
 	if (phy_is_ksz9021())
+		return;
+
+	fec_phy_ouid = PHY_RTL8211_OUID_GET(value2, value1);
+	if (phy_is_rtl8211())
 		return;
 
 	fec_phy_ouid = 0xFFFFFFFF;
@@ -409,7 +420,7 @@ static void setFecDuplexSpeed(volatile fec_t *fecp, unsigned char addr,
 		}
 
 		/* for Atheros PHY */
-		if (phy_is_ar8031() || phy_is_ar8033()) {
+		if (phy_is_ar8031() || phy_is_ar8033() || phy_is_rtl8211()) {
 			ret = __fec_mii_read(fecp, addr, PHY_MIPSCR, &val);
 			if (ret)
 				dup_spd = _100BASET | (FULL << 16);

@@ -90,8 +90,8 @@
 #define CONFIG_BOOTP_GATEWAY
 #define CONFIG_BOOTP_DNS
 
-#define CONFIG_CMD_SPI
-#define CONFIG_CMD_I2C
+//#define CONFIG_CMD_SPI
+//#define CONFIG_CMD_I2C
 #define CONFIG_CMD_IMXOTP
 
 /* Enable below configure when supporting nand */
@@ -115,24 +115,25 @@
 #define CONFIG_LOADADDR		0x10800000	/* loadaddr env var */
 #define CONFIG_RD_LOADADDR	(0x1300000)
 
-#define	CONFIG_EXTRA_ENV_SETTINGS					\
-		"netdev=eth0\0"						\
-		"ethprime=FEC0\0"					\
-		"uboot=u-boot.bin\0"			\
-		"kernel=uImage\0"				\
-		"nfsroot=/opt/eldk/arm\0"				\
-		"bootargs_base=setenv bootargs console=ttymxc0,115200\0"\
-		"bootargs_nfs=setenv bootargs ${bootargs} root=/dev/nfs "\
-			"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0"\
-		"bootcmd_net=run bootargs_base bootargs_nfs; "		\
-			"tftpboot ${loadaddr} ${kernel}; bootm\0"	\
-		"bootargs_mmc=setenv bootargs ${bootargs} ip=dhcp "     \
-			"root=/dev/mmcblk0p1 rootwait\0"                \
-		"bootcmd_mmc=run bootargs_base bootargs_mmc; "   \
-		"mmc dev 3; "	\
-		"mmc read ${loadaddr} 0x800 0x2000; bootm\0"	\
-		"bootcmd=run bootcmd_net\0"                             \
-
+#define	CONFIG_EXTRA_ENV_SETTINGS					 \
+		"netdev=eth0\0"                                          \
+		"ethaddr=b0:1f:de:ad:be:ef\0"                            \
+		"ethprime=FEC0\0"                                        \
+		"uboot=u-boot.bin\0"                                     \
+		"kernel=uImage\0"                                        \
+		"bootargs_base=console=ttymxc0,115200\0"                 \
+		"bootargs_nfs=setenv bootargs ${bootargs_base} ip=dhcp " \
+		        "root=/dev/nfs ro rootwait consoleblank=0'\0"    \
+		"bootcmd_nfs=run bootargs_nfs; dhcp ${loadaddr}; bootm\0"\
+		"bootargs_sd=setenv bootargs ${bootargs_base} ip=none "	 \
+			"root=/dev/mmcblk1p2 rootwait consoleblank=0\0"	 \
+		"bootcmd_sd=run bootargs_sd; mmc dev 2; "                \
+			"fatload mmc 2:1 ${loadaddr} /uimage; bootm\0"	 \
+		"bootargs_mmc=setenv bootargs ${bootargs_base} ip=none " \
+			"root=/dev/mmcblk0p2 rootwait consoleblank=0\0"	 \
+		"bootcmd_mmc=run bootargs_mmc; mmc dev 3; "              \
+			"fatload mmc 3:1 ${loadaddr} /uimage; bootm\0"	 \
+		"bootcmd=run bootcmd_sd; run bootcmd_mmc; run bootcmd_nfs\0"
 
 #define CONFIG_ARP_TIMEOUT	200UL
 
@@ -140,7 +141,7 @@
  * Miscellaneous configurable options
  */
 #define CONFIG_SYS_LONGHELP		/* undef to save memory */
-#define CONFIG_SYS_PROMPT		"MX6Q SABRESD U-Boot > "
+#define CONFIG_SYS_PROMPT		"CurieQ U-Boot > "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		1024	/* Console I/O Buffer Size */
 /* Print Buffer Size */
@@ -171,8 +172,8 @@
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_PING
-#define CONFIG_IPADDR			192.168.1.103
-#define CONFIG_SERVERIP			192.168.1.101
+#define CONFIG_IPADDR			192.168.18.223
+#define CONFIG_SERVERIP			192.168.18.123
 #define CONFIG_NETMASK			255.255.255.0
 
 /*
